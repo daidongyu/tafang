@@ -597,6 +597,27 @@
           font-size: 24px;
         }
       }
+      /* Phone-first game shell. Wider screens only frame the phone viewport. */
+      body { display:flex; justify-content:center; background:#050a0c; }
+      .app { width:min(100%,480px); max-width:100vw; grid-template-rows:54px minmax(0,1fr); box-shadow:0 0 70px #000; overflow:hidden; }
+      .topbar { gap:3px; padding:0 5px; min-width:0; }
+      .brand { min-width:0; flex:1; overflow:hidden; }
+      .brand h1 { font-size:13px; white-space:nowrap; }
+      .brand p,.stat:nth-child(3),.stat:nth-child(4),.actions .icon-btn:first-child { display:none; }
+      .stats { flex:0; gap:3px; }
+      .stat { min-width:46px; height:34px; padding:4px; }
+      .stat small { font-size:7px; }.stat strong { font-size:9px; white-space:nowrap; }
+      .actions { gap:2px; }.icon-btn,.speed-btn { height:32px; min-width:28px; }
+      .speed-btn { padding:0 4px; font-size:9px; }
+      .main { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) 106px; min-width:0; }
+      .side { border-left:0; border-top:1px solid #355148; padding:5px; overflow:hidden; }
+      .panel-head,.divider,.selection,.hint { display:none; }
+      .tower-list { grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; min-width:0; }
+      .tower-card { display:flex; flex-direction:column; justify-content:center; gap:2px; width:100%; min-width:0; height:95px; min-height:0; padding:3px; text-align:center; transform:none!important; }
+      .tower-card:before { inset:auto 0 0; width:auto; height:3px; }
+      .portrait { width:32px; height:32px; flex:none; font-size:12px; }.tower-card span:nth-child(2){min-width:0;width:100%;}.tower-card b { display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:8px;white-space:nowrap; }.tower-card p { display:none; }.cost { font-size:9px; }
+      .wave-card { top:7px; left:7px; width:164px; padding:7px; }.wave-card strong { font-size:10px; }.wave-card p { font-size:8px; }
+      .boss-bar { bottom:7px; width:72%; }.modal { padding:18px; }.modal h2 { font-size:23px; }
     </style>
   </head>
   <body>
@@ -633,12 +654,12 @@
           <canvas id="game" aria-label="保护菠榛沟塔防战场"></canvas>
           <div class="wave-card">
             <strong id="waveName">第一关 · 北坡警报</strong>
-            <p id="waveDesc">扒苞米贼正在接近村口</p>
+            <p id="waveDesc">击退 0 / 28 · 偷粮团伙</p>
             <div class="progress"><i id="waveProgress"></i></div>
           </div>
           <div class="boss-bar" id="bossBar">
             <div class="boss-label">
-              <b id="bossName">黑风野猪王</b><span id="bossHpText"></span>
+              <b id="bossName">黑风寨主</b><span id="bossHpText"></span>
             </div>
             <div class="boss-hp"><i id="bossHp"></i></div>
           </div>
@@ -648,11 +669,11 @@
               <div class="eyebrow">BOZHENGOU DEFENSE · 2026</div>
               <h2>保住村口，守住菠榛沟</h2>
               <p>
-                七月的辽西山风卷起尘土，怪物正沿着老村道逼近。村里最强的胡玉达率队迎敌，第二战力李明阳镇守河套，第三战力姜文负责雷阵支援；王海迪与老支书也带上家伙赶到村口。将同人物、同等级的炮台拖到一起，即可合成更强形态。
+                七月的辽西山风卷起尘土，一群人形匪徒正沿着老村道逼近。村里最强的胡玉达率队迎敌，第二战力李明阳镇守河套，第三战力姜文负责雷阵支援；王海迪与老支书也带上绝技赶到村口。将同人物、同等级的守村人拖到一起，即可合成更强形态。
               </p>
               <div class="facts">
                 <div class="fact"><b>5 位</b><small>不同战术守村人</small></div>
-                <div class="fact"><b>10 关</b><small>每关约五分钟</small></div>
+                <div class="fact"><b>10 关</b><small>击退目标后过关</small></div>
                 <div class="fact"><b>∞ 级</b><small>同级拖拽合成</small></div>
               </div>
               <button class="start-btn" id="startBtn">进入菠榛沟</button>
@@ -727,19 +748,19 @@
         const $ = (s) => document.querySelector(s),
           clamp = (v, a, b) => Math.max(a, Math.min(b, v)),
           dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
-        const W = 1280,
+        const W = 430,
           H = 720,
           path = [
-            { x: -40, y: 190 },
-            { x: 120, y: 190 },
-            { x: 235, y: 315 },
-            { x: 405, y: 315 },
-            { x: 515, y: 185 },
-            { x: 690, y: 185 },
-            { x: 790, y: 365 },
-            { x: 960, y: 365 },
-            { x: 1080, y: 505 },
-            { x: 1320, y: 505 },
+            { x: 455, y: 70 },
+            { x: 335, y: 90 },
+            { x: 292, y: 178 },
+            { x: 108, y: 184 },
+            { x: 68, y: 290 },
+            { x: 248, y: 330 },
+            { x: 350, y: 426 },
+            { x: 188, y: 505 },
+            { x: 102, y: 610 },
+            { x: 218, y: 750 },
           ]
         const types = [
           {
@@ -749,12 +770,12 @@
             role: '最强队长',
             cost: 190,
             color: '#ffd45e',
-            range: 168,
+            range: 105,
             damage: 34,
             rate: 0.22,
             shot: 820,
-            desc: '第一战力 · 穿甲连射',
-            skill: '每 8 发触发三连穿透',
+            desc: '第一战力 · 金锋刀阵',
+            skill: '召唤金色刀阵连续斩击',
           },
           {
             id: 'li',
@@ -763,11 +784,11 @@
             role: '第二战力',
             cost: 175,
             color: '#70d9f1',
-            range: 154,
+            range: 98,
             damage: 41,
             rate: 0.48,
             shot: 640,
-            desc: '强攻 · 寒霜冻结',
+            desc: '强攻 · 冰封法阵',
             skill: '攻击叠加寒霜，满层冻结',
           },
           {
@@ -777,12 +798,12 @@
             role: '爆破火炮',
             cost: 160,
             color: '#ff765a',
-            range: 168,
+            range: 108,
             damage: 40,
             rate: 1.15,
             shot: 460,
-            desc: '范围 · 灼烧',
-            skill: '炮弹爆炸并持续灼烧',
+            desc: '范围 · 陨火天降',
+            skill: '召唤陨火法阵并持续灼烧',
           },
           {
             id: 'jiang',
@@ -791,7 +812,7 @@
             role: '第三战力',
             cost: 165,
             color: '#b798ff',
-            range: 155,
+            range: 102,
             damage: 38,
             rate: 0.75,
             shot: 900,
@@ -805,7 +826,7 @@
             role: '旗阵支援',
             cost: 165,
             color: '#76df87',
-            range: 126,
+            range: 94,
             damage: 12,
             rate: 0.72,
             shot: 520,
@@ -814,20 +835,20 @@
           },
         ]
         const waves = [
-          ['第一关 · 北坡警报', '扒苞米贼', 1, 1.0],
-          ['第二关 · 河套迷雾', '黄沙耗子', 1.15, 0.94],
-          ['第三关 · 老井异响', '铁壳蝗虫', 1.32, 0.88],
-          ['第四关 · 村道封锁', '滚石怪', 1.53, 0.82],
-          ['第五关 · 月下猪嚎', '黑风野猪王', 1.8, 0.77],
-          ['第六关 · 青纱帐危机', '枯草傀儡', 2.05, 0.71],
-          ['第七关 · 东山落雷', '红眼山魈', 2.36, 0.67],
-          ['第八关 · 晒谷场决战', '装甲偷粮车', 2.72, 0.62],
-          ['第九关 · 凌晨围村', '辽西沙暴兽', 3.15, 0.58],
-          ['第十关 · 菠榛沟黎明', '荒原吞谷王', 3.7, 0.54],
+          ['第一关 · 北坡警报', '偷粮团伙', 1, 28],
+          ['第二关 · 河套迷雾', '黄沙快刀队', 1.18, 34],
+          ['第三关 · 老井异响', '铁甲先锋队', 1.4, 42],
+          ['第四关 · 村道封锁', '破门重装队', 1.67, 50],
+          ['第五关 · 月下围攻', '黑风寨主', 2.0, 58],
+          ['第六关 · 青纱帐危机', '荒草术士团', 2.38, 68],
+          ['第七关 · 东山落雷', '红眼突击队', 2.82, 78],
+          ['第八关 · 晒谷场决战', '装甲劫粮队', 3.34, 90],
+          ['第九关 · 凌晨围村', '辽西悍匪团', 3.95, 104],
+          ['第十关 · 菠榛沟黎明', '荒原匪首', 4.7, 120],
         ]
         const enemyKinds = [
           {
-            name: '扒苞米贼',
+            name: '偷粮刀客',
             hp: 82,
             speed: 49,
             r: 13,
@@ -835,7 +856,7 @@
             reward: 9,
           },
           {
-            name: '黄沙耗子',
+            name: '黄沙斥候',
             hp: 58,
             speed: 80,
             r: 10,
@@ -843,7 +864,7 @@
             reward: 8,
           },
           {
-            name: '铁壳蝗虫',
+            name: '铁甲先锋',
             hp: 150,
             speed: 43,
             r: 15,
@@ -852,7 +873,7 @@
             armor: 0.18,
           },
           {
-            name: '滚石怪',
+            name: '破门力士',
             hp: 310,
             speed: 27,
             r: 20,
@@ -861,7 +882,7 @@
             armor: 0.32,
           },
           {
-            name: '枯草傀儡',
+            name: '荒草术士',
             hp: 220,
             speed: 46,
             r: 17,
@@ -869,7 +890,7 @@
             reward: 18,
           },
           {
-            name: '红眼山魈',
+            name: '红眼刀卫',
             hp: 260,
             speed: 61,
             r: 18,
@@ -877,7 +898,7 @@
             reward: 22,
           },
           {
-            name: '装甲偷粮车',
+            name: '装甲劫粮兵',
             hp: 540,
             speed: 32,
             r: 23,
@@ -886,7 +907,7 @@
             armor: 0.38,
           },
           {
-            name: '辽西沙暴兽',
+            name: '辽西悍匪',
             hp: 360,
             speed: 70,
             r: 20,
@@ -906,7 +927,9 @@
           life = 20,
           kills = 0,
           wave = 0,
-          waveTime = 0
+          waveTime = 0,
+          spawnedThisWave = 0,
+          defeatedThisWave = 0
         let selectedType = null,
           selectedTower = null,
           dragTower = null,
@@ -923,7 +946,6 @@
           boss = null,
           soundOn = true,
           audio = null
-        const waveDuration = 300
 
         function resize() {
           const r = canvas.getBoundingClientRect()
@@ -1037,9 +1059,9 @@
           $('#killText').textContent = kills
           let w = waves[wave] || waves[9]
           $('#waveName').textContent = w[0]
-          $('#waveDesc').textContent = `${w[1]}正在接近村口`
+          $('#waveDesc').textContent = `击退 ${defeatedThisWave} / ${w[3]} · ${w[1]}`
           $('#waveProgress').style.width =
-            `${clamp((waveTime / waveDuration) * 100, 0, 100)}%`
+            `${clamp((defeatedThisWave / w[3]) * 100, 0, 100)}%`
           if (boss && !boss.dead) {
             $('#bossBar').classList.add('show')
             $('#bossName').textContent = boss.name
@@ -1191,28 +1213,21 @@
           if (bossSpawn) boss = e
         }
         function spawnLogic(dt) {
+          const quota = waves[wave][3]
+          if (spawnedThisWave >= quota) return
           spawnClock -= dt
-          let intensity = waves[wave][3],
-            interval = clamp(2.45 * intensity - waveTime / 1400, 0.7, 2.5)
+          let interval = clamp(1.55 - wave * 0.065, 0.72, 1.55)
           if (spawnClock <= 0) {
             let pool = Math.min(enemyKinds.length - 1, Math.floor(wave * 0.85))
             let idx = Math.max(
               0,
               pool - (Math.random() < 0.55 ? 0 : Math.floor(Math.random() * 3)),
             )
-            spawnEnemy(idx)
-            if (wave > 2 && Math.random() < 0.12 + wave * 0.018)
-              setTimeout(() => {
-                if (started && !gameOver) spawnEnemy(Math.max(0, idx - 1))
-              }, 180)
+            const isBoss = !boss && (wave === 4 || wave === 9) && spawnedThisWave === quota - 1
+            spawnEnemy(isBoss ? (wave === 4 ? 3 : 7) : idx, isBoss)
+            spawnedThisWave++
             spawnClock = interval
           }
-          if (
-            !boss &&
-            waveTime > waveDuration * 0.78 &&
-            (wave === 4 || wave === 9)
-          )
-            spawnEnemy(wave === 4 ? 3 : 7, true)
         }
         function damageEnemy(e, amount, color, armorPierce = 0) {
           if (e.dead) return
@@ -1232,6 +1247,7 @@
           e.dead = true
           gold += e.reward
           kills++
+          defeatedThisWave++
           burst(e.x, e.y, e.color, e.boss ? 55 : 12, e.boss ? 190 : 80)
           if (e.boss) {
             toast(`${e.name} 已被击退！`)
@@ -1243,9 +1259,45 @@
             s = levelStats(t)
           t.angle = Math.atan2(target.y - t.y, target.x - t.x)
           t.shots++
+          if (t.level >= 3 && t.shots % 6 === 1) {
+            const names={hu:'金锋裂阵',li:'寒川封界',wang:'赤焰陨星',jiang:'九霄引雷',chief:'守村山河阵'}
+            texts.push({x:t.x,y:t.y-35,text:names[t.type],life:.85,color:b.color})
+          }
           let dmg = s.damage,
             crit = t.level >= 5 && t.shots % 7 === 0
           if (crit) dmg *= 2.1
+          if (t.type === 'hu') {
+            const victims = enemies
+              .filter((e) => !e.dead && dist(e, target) < 28 + t.level * 3)
+              .slice(0, 1 + Math.min(3, Math.floor(t.level / 2)))
+            if (!victims.includes(target)) victims.unshift(target)
+            victims.forEach((e, i) => damageEnemy(e, dmg * Math.pow(0.82, i), b.color, 0.7))
+            effects.push({type:'slash',x:target.x,y:target.y,angle:t.angle,life:0.28,maxLife:0.28,color:b.color,level:t.level})
+            if (t.level >= 3) effects.push({type:'slash',x:target.x,y:target.y,angle:t.angle + Math.PI / 2,life:0.24,maxLife:0.24,color:'#fff4b0',level:t.level})
+            burst(target.x,target.y,b.color,5+t.level,80)
+            tone(760 + t.level * 25, 0.06, 0.018)
+            return
+          }
+          if (t.type === 'li') {
+            const radius = 30 + t.level * 4
+            enemies.filter((e)=>!e.dead && dist(e,target)<radius).forEach((e)=>{
+              damageEnemy(e,dmg*(e===target?1:0.55),b.color,0.15)
+              e.slow=Math.max(e.slow,2+t.level*.18);e.freeze=(e.freeze||0)+1
+              if(e.freeze>=Math.max(2,5-Math.floor(t.level/2))){e.slow=4;e.freeze=0}
+            })
+            effects.push({type:'glyph',x:target.x,y:target.y,r:radius,life:.65,maxLife:.65,color:b.color,level:t.level})
+            burst(target.x,target.y,'#d8f8ff',8+t.level,55)
+            tone(520,.09,.018)
+            return
+          }
+          if (t.type === 'wang') {
+            const radius=38+t.level*5
+            enemies.filter((e)=>!e.dead&&dist(e,target)<radius).forEach((e)=>{damageEnemy(e,dmg*(e===target?1:.68),b.color);e.burn=2.5+t.level*.2;e.burnDmg=dmg*.12})
+            effects.push({type:'meteor',x:target.x,y:target.y,r:radius,life:.55,maxLife:.55,color:b.color,level:t.level})
+            burst(target.x,target.y,b.color,14+t.level*2,120)
+            tone(120,.16,.035)
+            return
+          }
           if (t.type === 'jiang') {
             let hits = [target],
               candidates = enemies
@@ -1274,22 +1326,10 @@
             tone(650, 0.035, 0.012)
             return
           }
-          shots.push({
-            x: t.x + Math.cos(t.angle) * 20,
-            y: t.y + Math.sin(t.angle) * 20,
-            target,
-            damage: dmg,
-            speed: s.shot,
-            color: b.color,
-            type: t.type,
-            level: t.level,
-            dead: false,
-          })
-          tone(
-            t.type === 'wang' ? 120 : 400 + t.level * 20,
-            0.025,
-            t.type === 'wang' ? 0.025 : 0.009,
-          )
+          const radius=36+t.level*5
+          enemies.filter((e)=>!e.dead&&dist(e,target)<radius).forEach((e)=>{damageEnemy(e,dmg*(e===target?1:.7),b.color);e.d=Math.max(0,e.d-(5+t.level*2))})
+          effects.push({type:'aura',x:target.x,y:target.y,r:radius,life:.5,maxLife:.5,color:b.color,level:t.level})
+          tone(250,.12,.02)
         }
         function updateTowers(dt) {
           for (let t of towers) {
@@ -1390,7 +1430,9 @@
             if (e.d >= pathLength) {
               e.dead = true
               life -= e.boss ? 5 : 1
-              burst(W - 25, e.y, '#ff634f', 22, 120)
+              spawnedThisWave--
+              if (e.boss) boss = null
+              burst(e.x, e.y, '#ff634f', 22, 120)
               tone(90, 0.18, 0.05)
               if (life <= 0) finish(false)
             }
@@ -1435,6 +1477,8 @@
         function nextWave() {
           wave++
           waveTime = 0
+          spawnedThisWave = 0
+          defeatedThisWave = 0
           spawnClock = 2
           boss = null
           gold += 180 + wave * 30
@@ -1452,7 +1496,7 @@
           updateShots(dt)
           updateEnemies(dt)
           updateFx(dt)
-          if (waveTime >= waveDuration && enemies.length === 0) nextWave()
+          if (defeatedThisWave >= waves[wave][3] && enemies.length === 0) nextWave()
           updateUI()
         }
         function save() {
@@ -1497,6 +1541,8 @@
           kills = 0
           wave = 0
           waveTime = 0
+          spawnedThisWave = 0
+          defeatedThisWave = 0
           time = 0
           towers = []
           enemies = []
@@ -1524,32 +1570,29 @@
           // distant Liaoxi hills
           ctx.fillStyle = '#365b4c'
           ctx.beginPath()
-          ctx.moveTo(0, 180)
-          for (let x = 0; x <= W; x += 80)
-            ctx.lineTo(
-              x,
-              110 + Math.sin(x * 0.012) * 35 + Math.sin(x * 0.031) * 12,
-            )
-          ctx.lineTo(W, 300)
-          ctx.lineTo(0, 300)
+          ctx.moveTo(0, 115)
+          for (let x = 0; x <= W; x += 40)
+            ctx.lineTo(x, 52 + Math.sin(x * 0.022) * 24 + Math.sin(x * 0.051) * 8)
+          ctx.lineTo(W, 170)
+          ctx.lineTo(0, 170)
           ctx.fill()
           ctx.fillStyle = '#426954'
           ctx.beginPath()
-          ctx.moveTo(0, 230)
-          for (let x = 0; x <= W; x += 100)
-            ctx.lineTo(x, 175 + Math.sin(x * 0.009 + 2) * 32)
-          ctx.lineTo(W, 330)
-          ctx.lineTo(0, 330)
+          ctx.moveTo(0, 145)
+          for (let x = 0; x <= W; x += 50)
+            ctx.lineTo(x, 105 + Math.sin(x * 0.018 + 2) * 22)
+          ctx.lineTo(W, 205)
+          ctx.lineTo(0, 205)
           ctx.fill()
           // crop field stripes
           ctx.save()
           ctx.globalAlpha = 0.18
           ctx.strokeStyle = '#d3cc69'
           ctx.lineWidth = 2
-          for (let y = 410; y < 760; y += 18) {
+          for (let y = 210; y < 760; y += 18) {
             ctx.beginPath()
             ctx.moveTo(0, y)
-            ctx.lineTo(500, y - 90)
+            ctx.lineTo(W, y - 60)
             ctx.stroke()
           }
           ctx.restore()
@@ -1557,17 +1600,17 @@
           ctx.lineCap = 'round'
           ctx.lineJoin = 'round'
           ctx.strokeStyle = '#293c35'
-          ctx.lineWidth = 91
+          ctx.lineWidth = 68
           ctx.beginPath()
           path.forEach((p, i) =>
             i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y),
           )
           ctx.stroke()
           ctx.strokeStyle = '#b49c71'
-          ctx.lineWidth = 76
+          ctx.lineWidth = 58
           ctx.stroke()
           ctx.strokeStyle = '#cab58c'
-          ctx.lineWidth = 62
+          ctx.lineWidth = 46
           ctx.stroke()
           ctx.setLineDash([8, 18])
           ctx.strokeStyle = '#7c6c51'
@@ -1578,17 +1621,16 @@
           ctx.strokeStyle = '#52989b99'
           ctx.lineWidth = 18
           ctx.beginPath()
-          ctx.moveTo(0, 610)
-          ctx.bezierCurveTo(280, 520, 380, 690, 650, 580)
-          ctx.bezierCurveTo(830, 505, 1030, 680, 1280, 600)
+          ctx.moveTo(0, 548)
+          ctx.bezierCurveTo(120, 510, 245, 575, 430, 535)
           ctx.stroke()
           ctx.strokeStyle = '#a5d2c5aa'
           ctx.lineWidth = 2
           ctx.stroke()
           // village houses at exit
-          for (let i = 0; i < 4; i++) {
-            let x = 1140 + (i % 2) * 72,
-              y = 405 + Math.floor(i / 2) * 68
+          for (let i = 0; i < 3; i++) {
+            let x = 250 + (i % 2) * 72,
+              y = 630 + Math.floor(i / 2) * 58
             ctx.fillStyle = '#d8c49c'
             ctx.fillRect(x, y, 52, 36)
             ctx.fillStyle = i % 2 ? '#647c72' : '#9e5747'
@@ -1601,14 +1643,14 @@
             ctx.fillRect(x + 20, y + 16, 12, 20)
           }
           // trees deterministic
-          for (let i = 0; i < 35; i++) {
-            let x = ((i * 193) % 1240) + 20,
+          for (let i = 0; i < 24; i++) {
+            let x = ((i * 83) % 410) + 10,
               y = 80 + ((i * 97) % 590)
             if (
               path
                 .slice(1)
-                .some((b, j) => distanceToSegment({ x, y }, path[j], b) < 78) ||
-              (x > 1110 && y > 350)
+                .some((b, j) => distanceToSegment({ x, y }, path[j], b) < 48) ||
+              (x > 240 && y > 610)
             )
               continue
             ctx.fillStyle = '#274437'
@@ -1620,8 +1662,8 @@
           }
           ctx.fillStyle = '#f2d680'
           ctx.font = '700 12px sans-serif'
-          ctx.fillText('他拉皋镇方向', 22, 157)
-          ctx.fillText('菠榛沟村口 →', 1110, 565)
+          ctx.fillText('他拉皋镇方向', 276, 45)
+          ctx.fillText('↓ 菠榛沟村口', 246, 612)
         }
         function drawRange(t) {
           let s = levelStats(t),
@@ -1645,14 +1687,10 @@
           ctx.globalAlpha = ghost ? 0.55 : 1
           ctx.shadowColor = b.color
           ctx.shadowBlur = glow + (t.pulse || 0) * 25
-          ctx.fillStyle = '#17251f'
+          // rotating skill seal under the human defender
+          ctx.fillStyle = '#101c19cc'
           ctx.beginPath()
-          for (let i = 0; i < 8; i++) {
-            let a = (i * Math.PI) / 4,
-              r = i % 2 ? 24 : 28
-            ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r)
-          }
-          ctx.closePath()
+          ctx.arc(0, 7, 23 + Math.min(l, 6), 0, 6.28)
           ctx.fill()
           ctx.strokeStyle = l >= 5 ? '#f5dc77' : b.color
           ctx.lineWidth = l >= 5 ? 3 : 2
@@ -1660,39 +1698,49 @@
           if (l >= 3) {
             ctx.rotate(time * (l >= 7 ? 1.7 : 0.7))
             ctx.strokeStyle = b.color + 'aa'
-            ctx.lineWidth = 3
+            ctx.lineWidth = 2
             for (let i = 0; i < Math.min(l, 8); i++) {
               let a = (i * 6.28) / Math.min(l, 8)
               ctx.beginPath()
-              ctx.arc(Math.cos(a) * 31, Math.sin(a) * 31, 2.5, 0, 6.28)
+              ctx.moveTo(Math.cos(a) * 25, Math.sin(a) * 25 + 7)
+              ctx.lineTo(Math.cos(a) * 31, Math.sin(a) * 31 + 7)
               ctx.stroke()
             }
             ctx.rotate(-time * (l >= 7 ? 1.7 : 0.7))
           }
-          ctx.rotate(t.angle || 0)
+          // cape, legs, torso and arms: a readable top-down human silhouette
+          if (l >= 5) {
+            ctx.fillStyle = b.color + '88'
+            ctx.beginPath();ctx.moveTo(-13,-5);ctx.lineTo(-20,25);ctx.lineTo(0,18);ctx.lineTo(20,25);ctx.lineTo(13,-5);ctx.fill()
+          }
+          ctx.strokeStyle = '#17201e';ctx.lineWidth = 6;ctx.lineCap = 'round'
+          ctx.beginPath();ctx.moveTo(-6,13);ctx.lineTo(-9,24);ctx.moveTo(6,13);ctx.lineTo(9,24);ctx.stroke()
           ctx.fillStyle = b.color
-          ctx.fillRect(2, -6, 29 + l * 1.8, 12)
-          ctx.fillStyle = '#f2e9c9'
-          ctx.fillRect(11, -2, 20 + l, 4)
-          ctx.rotate(-(t.angle || 0))
-          ctx.fillStyle = '#12201c'
+          ctx.beginPath();ctx.moveTo(-11,-7);ctx.lineTo(11,-7);ctx.lineTo(9,15);ctx.lineTo(-9,15);ctx.closePath();ctx.fill()
+          ctx.strokeStyle = l >= 5 ? '#ffe69a' : '#25322e';ctx.lineWidth=2;ctx.stroke()
+          ctx.strokeStyle = '#efd2aa';ctx.lineWidth=5
+          ctx.beginPath();ctx.moveTo(-9,-3);ctx.lineTo(-17,8);ctx.moveTo(9,-3);ctx.lineTo(17,8);ctx.stroke()
+          ctx.fillStyle = '#efd2aa'
           ctx.beginPath()
-          ctx.arc(0, 0, 17, 0, 6.28)
+          ctx.arc(0, -15, 8, 0, 6.28)
           ctx.fill()
+          ctx.fillStyle='#17201d';ctx.beginPath();ctx.arc(0,-18,8,Math.PI,6.28);ctx.fill()
           ctx.strokeStyle = b.color
           ctx.lineWidth = 2
-          ctx.stroke()
-          ctx.fillStyle = b.color
-          ctx.font = '900 15px sans-serif'
+          ctx.beginPath();ctx.arc(0,-15,9,0,6.28);ctx.stroke()
+          // hovering skill emblem makes every defender read as a caster, not a gun
+          ctx.fillStyle = l >= 5 ? '#fff3b0' : b.color
+          ctx.font = '900 11px sans-serif'
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          ctx.fillText(b.short, 0, 1)
+          ctx.fillText(b.short, 0, -14)
+          if(l>=7){ctx.strokeStyle='#fff7cc';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-18,-10);ctx.lineTo(-27,-25);ctx.lineTo(-22,1);ctx.moveTo(18,-10);ctx.lineTo(27,-25);ctx.lineTo(22,1);ctx.stroke()}
           ctx.shadowBlur = 0
           ctx.fillStyle = '#0c1614cc'
-          ctx.fillRect(-18, 30, 36, 13)
+          ctx.fillRect(-17, 29, 34, 12)
           ctx.fillStyle = l >= 5 ? '#f7df83' : '#fff'
-          ctx.font = '700 9px sans-serif'
-          ctx.fillText(`LV.${l}`, 0, 37)
+          ctx.font = '700 8px sans-serif'
+          ctx.fillText(`LV.${l}`, 0, 35)
           ctx.restore()
         }
         function drawEnemy(e) {
@@ -1701,27 +1749,23 @@
           ctx.rotate(e.angle)
           ctx.shadowColor = e.boss ? '#f14755' : e.color
           ctx.shadowBlur = e.boss ? 20 : 4
-          ctx.fillStyle = '#1b2220'
-          ctx.beginPath()
-          ctx.arc(0, 0, e.r + 3, 0, 6.28)
-          ctx.fill()
+          const k=e.r/15
+          // human raider: head leads along the road, limbs swing as they walk
+          const step=Math.sin(time*9+e.phase)*3*k
+          ctx.strokeStyle='#171918';ctx.lineWidth=5*k;ctx.lineCap='round'
+          ctx.beginPath();ctx.moveTo(-4*k,7*k);ctx.lineTo(-8*k,16*k+step);ctx.moveTo(4*k,7*k);ctx.lineTo(8*k,16*k-step);ctx.stroke()
           ctx.fillStyle = e.color
-          ctx.beginPath()
-          ctx.moveTo(e.r, 0)
-          ctx.lineTo(-e.r * 0.6, e.r * 0.78)
-          ctx.lineTo(-e.r, e.r * 0.2)
-          ctx.lineTo(-e.r, -e.r * 0.65)
-          ctx.closePath()
-          ctx.fill()
-          ctx.fillStyle = '#ffedb0'
-          ctx.beginPath()
-          ctx.arc(e.r * 0.35, -e.r * 0.18, Math.max(2, e.r * 0.13), 0, 6.28)
-          ctx.fill()
+          ctx.beginPath();ctx.moveTo(-9*k,-7*k);ctx.lineTo(9*k,-7*k);ctx.lineTo(7*k,9*k);ctx.lineTo(-7*k,9*k);ctx.closePath();ctx.fill()
+          ctx.strokeStyle='#d1ad87';ctx.lineWidth=4*k;ctx.beginPath();ctx.moveTo(-7*k,-4*k);ctx.lineTo(-14*k,4*k+step);ctx.moveTo(7*k,-4*k);ctx.lineTo(14*k,4*k-step);ctx.stroke()
+          ctx.fillStyle='#d1ad87';ctx.beginPath();ctx.arc(0,-12*k,6*k,0,6.28);ctx.fill()
+          ctx.fillStyle=e.boss?'#4d1118':'#242825';ctx.beginPath();ctx.arc(0,-14*k,6.5*k,Math.PI,6.28);ctx.fill()
+          ctx.strokeStyle=e.boss?'#ff6a71':'#d9c477';ctx.lineWidth=2*k;ctx.beginPath();ctx.moveTo(-5*k,-12*k);ctx.lineTo(5*k,-12*k);ctx.stroke()
+          ctx.strokeStyle='#d8d4c4';ctx.lineWidth=2*k;ctx.beginPath();ctx.moveTo(14*k,4*k-step);ctx.lineTo(20*k,-5*k-step);ctx.stroke()
           if (e.slow > 0) {
             ctx.strokeStyle = '#8fe9ff'
             ctx.lineWidth = 2
             ctx.beginPath()
-            ctx.arc(0, 0, e.r + 6, 0, 6.28)
+            ctx.arc(0, 2, e.r + 8, 0, 6.28)
             ctx.stroke()
           }
           ctx.restore()
@@ -1747,7 +1791,8 @@
           }
           ctx.shadowBlur = 0
           for (let e of effects) {
-            ctx.globalAlpha = clamp(e.life * 2, 0, 1)
+            const p=1-e.life/(e.maxLife||e.life+.2)
+            ctx.globalAlpha = clamp(e.life * 3, 0, 1)
             ctx.strokeStyle = e.color
             ctx.lineWidth = e.type === 'bolt' ? 3 : 2
             if (e.type === 'ring') {
@@ -1755,7 +1800,7 @@
               ctx.beginPath()
               ctx.arc(e.x, e.y, Math.max(e.r, r), 0, 6.28)
               ctx.stroke()
-            } else {
+            } else if(e.type==='bolt') {
               ctx.beginPath()
               ctx.moveTo(e.a.x, e.a.y)
               let mx = (e.a.x + e.b.x) / 2 + (Math.random() - 0.5) * 18,
@@ -1763,6 +1808,25 @@
               ctx.lineTo(mx, my)
               ctx.lineTo(e.b.x, e.b.y)
               ctx.stroke()
+              ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(e.b.x,e.b.y,3,0,6.28);ctx.fill()
+            } else if(e.type==='slash') {
+              ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle);ctx.shadowColor=e.color;ctx.shadowBlur=14
+              for(let i=0;i<Math.min(4,1+Math.floor(e.level/2));i++){ctx.beginPath();ctx.arc(0,(i-1.5)*7,26+e.level*3,-1.05,1.05);ctx.stroke()}
+              ctx.restore()
+            } else if(e.type==='glyph') {
+              ctx.save();ctx.translate(e.x,e.y);ctx.rotate(time*1.8);ctx.shadowColor=e.color;ctx.shadowBlur=12
+              ctx.beginPath();ctx.arc(0,0,e.r*(.65+p*.35),0,6.28);ctx.stroke()
+              for(let i=0;i<6;i++){let a=i*Math.PI/3;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a)*e.r,Math.sin(a)*e.r);ctx.stroke()}
+              ctx.restore()
+            } else if(e.type==='meteor') {
+              const r=e.r*(.65+p*.35);ctx.fillStyle=e.color+'55';ctx.shadowColor=e.color;ctx.shadowBlur=20
+              ctx.beginPath();ctx.arc(e.x,e.y,r,0,6.28);ctx.fill();ctx.stroke()
+              ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(e.x+28*(1-p),e.y-80*(1-p));ctx.lineTo(e.x,e.y);ctx.stroke()
+            } else if(e.type==='aura') {
+              ctx.save();ctx.translate(e.x,e.y);ctx.rotate(-time*2);ctx.shadowColor=e.color;ctx.shadowBlur=12
+              ctx.beginPath();ctx.arc(0,0,e.r*(.5+p*.5),0,6.28);ctx.stroke()
+              for(let i=0;i<8;i++){let a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(Math.cos(a)*10,Math.sin(a)*10);ctx.lineTo(Math.cos(a)*e.r,Math.sin(a)*e.r);ctx.stroke()}
+              ctx.restore()
             }
           }
           ctx.globalAlpha = 1
@@ -1951,6 +2015,16 @@
         addEventListener('beforeunload', save)
         renderCards()
         updateUI()
+        if (new URLSearchParams(location.search).has('battle-preview')) {
+          started = true
+          gold = 2200
+          $('#intro').classList.remove('show')
+          ;[
+            [205, 105, 'hu'], [385, 245, 'li'], [178, 267, 'wang'],
+            [53, 405, 'jiang'], [306, 558, 'chief'],
+          ].forEach(([x,y,type]) => placeTower({x,y},type))
+          spawnClock = 0
+        }
         setInterval(() => {
           if (started && !gameOver) save()
         }, 15000)
