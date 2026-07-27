@@ -1259,6 +1259,10 @@
             s = levelStats(t)
           t.angle = Math.atan2(target.y - t.y, target.x - t.x)
           t.shots++
+          effects.push({
+            type:'cast',a:{x:t.x,y:t.y},b:{x:target.x,y:target.y},
+            life:.2,maxLife:.2,color:b.color,level:t.level,kind:t.type,
+          })
           if (t.level >= 3 && t.shots % 6 === 1) {
             const names={hu:'金锋裂阵',li:'寒川封界',wang:'赤焰陨星',jiang:'九霄引雷',chief:'守村山河阵'}
             texts.push({x:t.x,y:t.y-35,text:names[t.type],life:.85,color:b.color})
@@ -1272,8 +1276,9 @@
               .slice(0, 1 + Math.min(3, Math.floor(t.level / 2)))
             if (!victims.includes(target)) victims.unshift(target)
             victims.forEach((e, i) => damageEnemy(e, dmg * Math.pow(0.82, i), b.color, 0.7))
-            effects.push({type:'slash',x:target.x,y:target.y,angle:t.angle,life:0.28,maxLife:0.28,color:b.color,level:t.level})
-            if (t.level >= 3) effects.push({type:'slash',x:target.x,y:target.y,angle:t.angle + Math.PI / 2,life:0.24,maxLife:0.24,color:'#fff4b0',level:t.level})
+            effects.push({type:'slash',x:target.x,y:target.y,angle:t.angle,life:0.42,maxLife:0.42,color:b.color,level:t.level})
+            if (t.level >= 3) effects.push({type:'slash',x:target.x,y:target.y,angle:t.angle + Math.PI / 2,life:0.36,maxLife:0.36,color:'#fff4b0',level:t.level})
+            effects.push({type:'ring',x:target.x,y:target.y,r:4,max:38+t.level*4,life:.38,color:b.color})
             burst(target.x,target.y,b.color,5+t.level,80)
             tone(760 + t.level * 25, 0.06, 0.018)
             return
@@ -1285,7 +1290,7 @@
               e.slow=Math.max(e.slow,2+t.level*.18);e.freeze=(e.freeze||0)+1
               if(e.freeze>=Math.max(2,5-Math.floor(t.level/2))){e.slow=4;e.freeze=0}
             })
-            effects.push({type:'glyph',x:target.x,y:target.y,r:radius,life:.65,maxLife:.65,color:b.color,level:t.level})
+            effects.push({type:'glyph',x:target.x,y:target.y,r:radius,life:.82,maxLife:.82,color:b.color,level:t.level})
             burst(target.x,target.y,'#d8f8ff',8+t.level,55)
             tone(520,.09,.018)
             return
@@ -1293,7 +1298,7 @@
           if (t.type === 'wang') {
             const radius=38+t.level*5
             enemies.filter((e)=>!e.dead&&dist(e,target)<radius).forEach((e)=>{damageEnemy(e,dmg*(e===target?1:.68),b.color);e.burn=2.5+t.level*.2;e.burnDmg=dmg*.12})
-            effects.push({type:'meteor',x:target.x,y:target.y,r:radius,life:.55,maxLife:.55,color:b.color,level:t.level})
+            effects.push({type:'meteor',x:target.x,y:target.y,r:radius,life:.78,maxLife:.78,color:b.color,level:t.level})
             burst(target.x,target.y,b.color,14+t.level*2,120)
             tone(120,.16,.035)
             return
@@ -1328,7 +1333,7 @@
           }
           const radius=36+t.level*5
           enemies.filter((e)=>!e.dead&&dist(e,target)<radius).forEach((e)=>{damageEnemy(e,dmg*(e===target?1:.7),b.color);e.d=Math.max(0,e.d-(5+t.level*2))})
-          effects.push({type:'aura',x:target.x,y:target.y,r:radius,life:.5,maxLife:.5,color:b.color,level:t.level})
+          effects.push({type:'aura',x:target.x,y:target.y,r:radius,life:.72,maxLife:.72,color:b.color,level:t.level})
           tone(250,.12,.02)
         }
         function updateTowers(dt) {
@@ -1422,6 +1427,7 @@
               e.hp -= e.burnDmg * dt
               if (e.hp <= 0) killEnemy(e)
             }
+            if (e.dead) continue
             e.d += e.speed * (e.slow > 0 ? 0.48 : 1) * dt
             let p = pathPointAt(e.d)
             e.x = p.x
@@ -1687,6 +1693,10 @@
           ctx.globalAlpha = ghost ? 0.55 : 1
           ctx.shadowColor = b.color
           ctx.shadowBlur = glow + (t.pulse || 0) * 25
+          const breathe=.5+.5*Math.sin(time*3+(t.id||0))
+          const aura=ctx.createRadialGradient(0,4,4,0,4,37+l*2)
+          aura.addColorStop(0,b.color+(l>=3?'55':'28'));aura.addColorStop(.55,b.color+'18');aura.addColorStop(1,b.color+'00')
+          ctx.fillStyle=aura;ctx.beginPath();ctx.arc(0,4,37+l*2+breathe*3,0,6.28);ctx.fill()
           // rotating skill seal under the human defender
           ctx.fillStyle = '#101c19cc'
           ctx.beginPath()
@@ -1708,6 +1718,20 @@
             }
             ctx.rotate(-time * (l >= 7 ? 1.7 : 0.7))
           }
+          // Each defender carries a unique supernatural weapon silhouette.
+          ctx.save();ctx.shadowColor=b.color;ctx.shadowBlur=10+l*2;ctx.strokeStyle=b.color;ctx.fillStyle=b.color;ctx.lineCap='round'
+          if(t.type==='hu'){
+            ctx.lineWidth=3;ctx.rotate(-.35);ctx.beginPath();ctx.moveTo(-23,18);ctx.lineTo(18,-30);ctx.stroke();ctx.lineWidth=1;ctx.strokeStyle='#fff4bd';ctx.beginPath();ctx.moveTo(-20,15);ctx.lineTo(19,-31);ctx.stroke();ctx.rotate(.7);ctx.strokeStyle=b.color;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(23,18);ctx.lineTo(-18,-30);ctx.stroke()
+          }else if(t.type==='li'){
+            for(let i=0;i<4;i++){let a=i*Math.PI/2+time*.35,r=25+breathe*3;ctx.save();ctx.translate(Math.cos(a)*r,Math.sin(a)*r+2);ctx.rotate(a);ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(5,4);ctx.lineTo(0,9);ctx.lineTo(-5,4);ctx.closePath();ctx.fill();ctx.restore()}
+          }else if(t.type==='wang'){
+            ctx.strokeStyle='#ffd08a';ctx.lineWidth=3;for(let s of [-1,1]){ctx.beginPath();ctx.moveTo(s*9,5);ctx.quadraticCurveTo(s*25,-8-breathe*5,s*16,-25);ctx.quadraticCurveTo(s*8,-14,s*9,5);ctx.stroke()}
+          }else if(t.type==='jiang'){
+            ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-27,-16);ctx.lineTo(-17,-4);ctx.lineTo(-27,8);ctx.stroke();ctx.beginPath();ctx.moveTo(27,-16);ctx.lineTo(17,-4);ctx.lineTo(27,8);ctx.stroke();for(let i=0;i<3;i++){let a=time*1.8+i*2.094;ctx.beginPath();ctx.arc(Math.cos(a)*29,Math.sin(a)*18+2,2.5,0,6.28);ctx.fill()}
+          }else{
+            ctx.strokeStyle='#e8e0b1';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-20,22);ctx.lineTo(-20,-33);ctx.stroke();ctx.fillStyle=b.color;ctx.beginPath();ctx.moveTo(-18,-30);ctx.lineTo(18,-23);ctx.lineTo(-18,-12);ctx.closePath();ctx.fill();ctx.fillStyle='#f4efc7';ctx.font='900 8px sans-serif';ctx.fillText('守',-5,-21)
+          }
+          ctx.restore()
           // cape, legs, torso and arms: a readable top-down human silhouette
           if (l >= 5) {
             ctx.fillStyle = b.color + '88'
@@ -1734,7 +1758,7 @@
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
           ctx.fillText(b.short, 0, -14)
-          if(l>=7){ctx.strokeStyle='#fff7cc';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-18,-10);ctx.lineTo(-27,-25);ctx.lineTo(-22,1);ctx.moveTo(18,-10);ctx.lineTo(27,-25);ctx.lineTo(22,1);ctx.stroke()}
+          if(l>=7){ctx.strokeStyle='#fff7cc';ctx.lineWidth=2;ctx.shadowColor=b.color;ctx.shadowBlur=16;ctx.beginPath();ctx.moveTo(-18,-10);ctx.lineTo(-31,-29);ctx.lineTo(-25,4);ctx.moveTo(18,-10);ctx.lineTo(31,-29);ctx.lineTo(25,4);ctx.stroke();ctx.beginPath();ctx.arc(0,-15,16+breathe*2,Math.PI*1.08,Math.PI*1.92);ctx.stroke()}
           ctx.shadowBlur = 0
           ctx.fillStyle = '#0c1614cc'
           ctx.fillRect(-17, 29, 34, 12)
@@ -1790,6 +1814,7 @@
             ctx.fill()
           }
           ctx.shadowBlur = 0
+          ctx.globalCompositeOperation='lighter'
           for (let e of effects) {
             const p=1-e.life/(e.maxLife||e.life+.2)
             ctx.globalAlpha = clamp(e.life * 3, 0, 1)
@@ -1797,38 +1822,44 @@
             ctx.lineWidth = e.type === 'bolt' ? 3 : 2
             if (e.type === 'ring') {
               let r = e.max * (1 - e.life / (e.life + 0.15))
-              ctx.beginPath()
-              ctx.arc(e.x, e.y, Math.max(e.r, r), 0, 6.28)
-              ctx.stroke()
+              ctx.shadowColor=e.color;ctx.shadowBlur=14;ctx.lineWidth=3*(1-p)+1
+              ctx.beginPath();ctx.arc(e.x,e.y,Math.max(e.r,r),0,6.28);ctx.stroke()
+              ctx.globalAlpha*=.45;ctx.beginPath();ctx.arc(e.x,e.y,Math.max(e.r,r)*.72,0,6.28);ctx.stroke()
             } else if(e.type==='bolt') {
-              ctx.beginPath()
-              ctx.moveTo(e.a.x, e.a.y)
               let mx = (e.a.x + e.b.x) / 2 + (Math.random() - 0.5) * 18,
                 my = (e.a.y + e.b.y) / 2 + (Math.random() - 0.5) * 18
-              ctx.lineTo(mx, my)
-              ctx.lineTo(e.b.x, e.b.y)
-              ctx.stroke()
-              ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(e.b.x,e.b.y,3,0,6.28);ctx.fill()
+              ctx.shadowColor=e.color;ctx.shadowBlur=18
+              for(let w of [8,4,1]){ctx.globalAlpha=w===8?.16:w===4?.45:1;ctx.strokeStyle=w===1?'#ffffff':e.color;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(e.a.x,e.a.y);ctx.lineTo(mx,my);ctx.lineTo(e.b.x,e.b.y);ctx.stroke()}
+              ctx.globalAlpha=1;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(e.b.x,e.b.y,4,0,6.28);ctx.fill();ctx.strokeStyle=e.color;ctx.lineWidth=2;ctx.beginPath();ctx.arc(e.b.x,e.b.y,10+p*12,0,6.28);ctx.stroke()
+            } else if(e.type==='cast') {
+              const dx=e.b.x-e.a.x,dy=e.b.y-e.a.y,len=Math.hypot(dx,dy),nx=-dy/len,ny=dx/len
+              ctx.shadowColor=e.color;ctx.shadowBlur=14;ctx.lineCap='round'
+              for(let i=-1;i<=1;i++){ctx.strokeStyle=i===0?'#ffffff':e.color;ctx.lineWidth=i===0?1.2:2;ctx.globalAlpha=i===0?.85:.28;ctx.beginPath();ctx.moveTo(e.a.x+nx*i*3,e.a.y+ny*i*3);ctx.lineTo(e.b.x+nx*i*3,e.b.y+ny*i*3);ctx.stroke()}
+              ctx.globalAlpha=.8;ctx.fillStyle=e.color;ctx.beginPath();ctx.arc(e.a.x,e.a.y,8+p*8,0,6.28);ctx.fill()
             } else if(e.type==='slash') {
-              ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle);ctx.shadowColor=e.color;ctx.shadowBlur=14
-              for(let i=0;i<Math.min(4,1+Math.floor(e.level/2));i++){ctx.beginPath();ctx.arc(0,(i-1.5)*7,26+e.level*3,-1.05,1.05);ctx.stroke()}
+              ctx.save();ctx.translate(e.x,e.y);ctx.rotate(e.angle);ctx.shadowColor=e.color;ctx.shadowBlur=24;ctx.lineCap='round'
+              for(let i=0;i<Math.min(5,1+Math.floor(e.level/2));i++){ctx.strokeStyle=i%2?'#fff8cf':e.color;ctx.lineWidth=Math.max(1,6-i);ctx.beginPath();ctx.arc(0,(i-2)*7,27+e.level*3+p*10,-1.1,1.1);ctx.stroke()}
+              ctx.globalAlpha=.28;ctx.fillStyle=e.color;ctx.beginPath();ctx.moveTo(-12,-35);ctx.lineTo(52,0);ctx.lineTo(-12,35);ctx.closePath();ctx.fill()
               ctx.restore()
             } else if(e.type==='glyph') {
-              ctx.save();ctx.translate(e.x,e.y);ctx.rotate(time*1.8);ctx.shadowColor=e.color;ctx.shadowBlur=12
-              ctx.beginPath();ctx.arc(0,0,e.r*(.65+p*.35),0,6.28);ctx.stroke()
-              for(let i=0;i<6;i++){let a=i*Math.PI/3;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a)*e.r,Math.sin(a)*e.r);ctx.stroke()}
+              ctx.save();ctx.translate(e.x,e.y);ctx.rotate(time*1.8);ctx.shadowColor=e.color;ctx.shadowBlur=20;ctx.lineWidth=2
+              const gr=e.r*(.65+p*.35);ctx.beginPath();ctx.arc(0,0,gr,0,6.28);ctx.stroke();ctx.beginPath();ctx.arc(0,0,gr*.7,0,6.28);ctx.stroke()
+              for(let i=0;i<6;i++){let a=i*Math.PI/3;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a)*gr,Math.sin(a)*gr);ctx.stroke();ctx.save();ctx.translate(Math.cos(a)*gr,Math.sin(a)*gr);ctx.rotate(a);ctx.fillStyle='#dfffff';ctx.beginPath();ctx.moveTo(0,-12);ctx.lineTo(5,0);ctx.lineTo(0,12);ctx.lineTo(-5,0);ctx.closePath();ctx.fill();ctx.restore()}
               ctx.restore()
+              ctx.globalAlpha=.5;ctx.strokeStyle='#eaffff';ctx.lineWidth=3;for(let i=0;i<3+Math.min(4,e.level);i++){let x=e.x+(i/(2+Math.min(4,e.level))-.5)*e.r*1.5;ctx.beginPath();ctx.moveTo(x,e.y-e.r*(1-p)*1.8);ctx.lineTo(x,e.y+e.r*.45);ctx.stroke()}
             } else if(e.type==='meteor') {
-              const r=e.r*(.65+p*.35);ctx.fillStyle=e.color+'55';ctx.shadowColor=e.color;ctx.shadowBlur=20
-              ctx.beginPath();ctx.arc(e.x,e.y,r,0,6.28);ctx.fill();ctx.stroke()
-              ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(e.x+28*(1-p),e.y-80*(1-p));ctx.lineTo(e.x,e.y);ctx.stroke()
+              const r=e.r*(.65+p*.35),g=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,r);g.addColorStop(0,'#fff6c2');g.addColorStop(.18,'#ffb03b');g.addColorStop(.55,e.color+'aa');g.addColorStop(1,e.color+'00');ctx.fillStyle=g;ctx.shadowColor=e.color;ctx.shadowBlur=28
+              ctx.beginPath();ctx.arc(e.x,e.y,r,0,6.28);ctx.fill();ctx.strokeStyle='#ffdb70';ctx.lineWidth=3;ctx.stroke()
+              ctx.lineWidth=10;ctx.globalAlpha=.75;ctx.beginPath();ctx.moveTo(e.x+42*(1-p),e.y-125*(1-p));ctx.lineTo(e.x,e.y);ctx.stroke();ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.stroke()
+              ctx.globalAlpha=.7;for(let i=0;i<7;i++){let a=i*.897+e.level,r2=r*(.25+p*.7);ctx.beginPath();ctx.moveTo(e.x+Math.cos(a)*r2*.3,e.y+Math.sin(a)*r2*.3);ctx.lineTo(e.x+Math.cos(a)*r2*1.25,e.y+Math.sin(a)*r2*1.25);ctx.stroke()}
             } else if(e.type==='aura') {
-              ctx.save();ctx.translate(e.x,e.y);ctx.rotate(-time*2);ctx.shadowColor=e.color;ctx.shadowBlur=12
-              ctx.beginPath();ctx.arc(0,0,e.r*(.5+p*.5),0,6.28);ctx.stroke()
-              for(let i=0;i<8;i++){let a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(Math.cos(a)*10,Math.sin(a)*10);ctx.lineTo(Math.cos(a)*e.r,Math.sin(a)*e.r);ctx.stroke()}
+              ctx.save();ctx.translate(e.x,e.y);ctx.rotate(-time*2);ctx.shadowColor=e.color;ctx.shadowBlur=22;ctx.lineWidth=3
+              const ar=e.r*(.5+p*.5);ctx.beginPath();ctx.arc(0,0,ar,0,6.28);ctx.stroke();ctx.beginPath();ctx.arc(0,0,ar*.58,0,6.28);ctx.stroke()
+              for(let i=0;i<8;i++){let a=i*Math.PI/4;ctx.beginPath();ctx.moveTo(Math.cos(a)*10,Math.sin(a)*10);ctx.lineTo(Math.cos(a)*ar,Math.sin(a)*ar);ctx.stroke();ctx.fillStyle=i%2?'#fff8b8':e.color;ctx.beginPath();ctx.arc(Math.cos(a)*ar,Math.sin(a)*ar,3,0,6.28);ctx.fill()}
               ctx.restore()
             }
           }
+          ctx.globalCompositeOperation='source-over'
           ctx.globalAlpha = 1
           for (let p of particles) {
             ctx.globalAlpha = clamp(p.life / p.max, 0, 1)
@@ -2015,16 +2046,6 @@
         addEventListener('beforeunload', save)
         renderCards()
         updateUI()
-        if (new URLSearchParams(location.search).has('battle-preview')) {
-          started = true
-          gold = 2200
-          $('#intro').classList.remove('show')
-          ;[
-            [205, 105, 'hu'], [385, 245, 'li'], [178, 267, 'wang'],
-            [53, 405, 'jiang'], [306, 558, 'chief'],
-          ].forEach(([x,y,type]) => placeTower({x,y},type))
-          spawnClock = 0
-        }
         setInterval(() => {
           if (started && !gameOver) save()
         }, 15000)
